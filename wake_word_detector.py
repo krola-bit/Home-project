@@ -45,26 +45,22 @@ class WakeWordDetector:
 
         while True:
             try:
-                # Mikrofon adatainak beolvasása
                 pcm = self.audio_stream.read(1024, exception_on_overflow=False)
                 pcm = np.frombuffer(pcm, dtype=np.int16)
 
-                # Ha szükséges, újramintavételezés
                 if 48000 != self.porcupine.sample_rate:
                     pcm = resample_audio(pcm, input_rate=48000, output_rate=self.porcupine.sample_rate)
 
-                # Helytelen hosszúság esetén kihagyja
                 if len(pcm) != self.porcupine.frame_length:
                     print(f"HIBA: A Porcupine {self.porcupine.frame_length} hosszú frame-eket vár, de {len(pcm)} érkezett!")
                     continue
 
-                # Ébresztő szó felismerése
                 result = self.porcupine.process(pcm)
 
                 if result >= 0:
                     print("Ébresztő szó felismerve!")
                     os.system('say "Ébresztő szó felismerve!"')
-                    return  # Visszatérés a `main.py`-ba
+                    return pcm  # Visszatér a PCM adatokkal
             except Exception as e:
                 print(f"Hiba történt a felismerés során: {e}")
 

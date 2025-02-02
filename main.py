@@ -3,6 +3,7 @@ import sys
 from wake_word_detector import WakeWordDetector  # Ébresztő szó figyelő
 from user_authenticator import UserAuthenticator  # Azonosítási modul
 from shutdown_handler import ShutdownHandler  # Leállítás kezelő
+from command_handler import handle_user_commands  # Kérések és utasítások kezelése
 
 # Globális változók
 detector = None
@@ -22,15 +23,17 @@ def main():
     shutdown_handler = ShutdownHandler(detector, authenticator)  # Leállítás kezelő inicializálása
 
     while True:
-        detector.wait_for_wake_word()  # 🚀 **Vár az ébresztő szóra**
+        # Az ébresztő szóra várás, és PCM adatok visszaadása
+        pcm_data = detector.wait_for_wake_word()  # 🚀 Vár az ébresztő szóra és PCM adatokat ad vissza
 
-        user = authenticator.authenticate_user()  # 🔑 **Felhasználó azonosítása**
+        # PCM adatok átadása az autentikációs modulnak
+        user = authenticator.authenticate_user(pcm_data)  # 🔑 Felhasználó azonosítása
 
         if user:
             os.system(f'say "Mit szeretnél, {user}?"')
             # Itt lehetőség van további parancsok vagy kérések kezelésére
+            handle_user_commands(user)  # ➡️ Átirányítás a kérések vagy utasítások kezelésére
 
 if __name__ == "__main__":
     main()
 
-    

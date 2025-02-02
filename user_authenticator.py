@@ -12,9 +12,9 @@ class UserAuthenticator:
         self.profiles = load_profiles()
         self.weight = 0.7  # Az új hangminta súlya
 
-    def authenticate_user(self):
+    def authenticate_user(self, pcm_data):
         """Az ébresztő szó felismerése után azonosítja a felhasználót."""
-        profile = analyze_audio(None)  # Hangprofil elemzés
+        profile = analyze_audio(pcm_data)  # Hangprofil elemzés
         match = find_matching_profile(profile, self.profiles)
 
         if match:
