@@ -22,24 +22,44 @@ def listen():
             os.system('say "Időtúllépés. Kérlek, válaszolj újra."')
             return None
 
-def handle_commands_or_requests():
-    """Folyamatosan figyeli a parancsokat vagy kéréseket az azonosítás után."""
+def handle_new_user(self, profile):
+    """Kezeli az új felhasználó azonosítását és esetleges mentését."""
+
+    # 1️⃣ Első üzenet: A beazonosítás sikertelen, kérjük a nevet
+    os.system('say "Nem ismerlek. Kérlek, mondd meg a neved!"')
+
+    # 2️⃣ Név bekérése és ellenőrzése
+    name = get_valid_name()  # 🔹 Csak akkor tér vissza, ha valódi nevet kapunk!
+
+    # 3️⃣ Második körös azonosítás: összehasonlítás a mentett nevekkel
+    if name in self.profiles:
+        os.system(f'say "Üdv újra, {name}! Miben segíthetek?"')
+        self.update_existing_profile(name, profile)
+        return name  # 🔹 Sikeres azonosítás után kilépünk
+
+    # 4️⃣ Ha a név nem szerepel a mentett profilok között: jelezzük, hogy nem sikerült
+    os.system('say "Továbbra sem sikerült azonosítani. Szeretnéd, ha menteném a neved?"')
+    response = listen()
+
+    # 5️⃣ Ha igen, mentjük a profilt
+    if response == "igen":
+        self.profiles[name] = profile
+        save_profiles(self.profiles)
+        os.system(f'say "Profil elmentve. Miben segíthetek, {name}?"')
+        return name
+
+    # 6️⃣ Ha nem, továbblépünk
+    os.system('say "Rendben. Miben segíthetek?"')
+    return None  # 🔹 A felhasználót nem mentettük, de további kéréseket kezelhet
+
+def get_valid_name():
+    """Megkérdezi a felhasználót a nevéről, és ellenőrzi, hogy valódi név-e."""
     while True:
-        os.system('say "Várok parancsra vagy kérésre. Mondd, mit szeretnél!"')
-        user_input = listen()
-        
-        if not user_input:
-            continue  # Ha nem érkezik bemenet, folytatja a várakozást
-        
-        # Parancsok vagy kérések kategorizálása
-        if "kapcsold" in user_input or "indítsd" in user_input:
-            os.system(f'say "Parancs észlelve: {user_input}"')
-            print(f"Végrehajtandó parancs: {user_input}")
-        elif "mennyi" in user_input or "hogyan" in user_input:
-            os.system(f'say "Kérés észlelve: {user_input}"')
-            print(f"Feldolgozandó kérés: {user_input}")
-        elif "kilépés" in user_input:
-            os.system('say "Kilépés a figyelő módból."')
-            break  # Figyelőmód leállítása
-        else:
-            os.system(f'say "Nem értem, mit szeretnél: {user_input}"')
+        name = listen()
+
+        # Ellenőrizzük, hogy a válasz egy név-e (csak betűket tartalmazzon)
+        if name and name.replace(" ", "").isalpha():
+            return name  # 🔹 Érvényes név esetén visszatérünk
+
+        # Ha nem volt felismerhető név, újra kérdezzük
+        os.system('say "Nem értettem a neved. Kérlek, mondd el érthetően."')
